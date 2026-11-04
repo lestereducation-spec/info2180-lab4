@@ -63,10 +63,42 @@ $superheroes = [
   ], 
 ];
 
-?>
+// Read the query sent by JavaScript.
+$input = $_GET['query'] ?? '';
+$query = is_string($input) ? trim($input) : '';
 
-<ul>
-<?php foreach ($superheroes as $superhero): ?>
-  <li><?= $superhero['alias']; ?></li>
-<?php endforeach; ?>
-</ul>
+// Escape text before inserting it into HTML.
+function escape($text) {
+    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+}
+
+if ($query === '') {
+    // A blank search returns every alias.
+    echo '<ul>';
+
+    foreach ($superheroes as $superhero) {
+        echo '<li>' . escape($superhero['alias']) . '</li>';
+    }
+
+    echo '</ul>';
+} else {
+    $match = null;
+
+    foreach ($superheroes as $superhero) {
+        $matchesName = strcasecmp($superhero['name'], $query) === 0;
+        $matchesAlias = strcasecmp($superhero['alias'], $query) === 0;
+
+        if ($matchesName || $matchesAlias) {
+            $match = $superhero;
+            break;
+        }
+    }
+
+    if ($match !== null) {
+        echo '<h3>' . escape($match['alias']) . '</h3>';
+        echo '<h4>' . escape($match['name']) . '</h4>';
+        echo '<p>' . escape($match['biography']) . '</p>';
+    } else {
+        echo '<p>Superhero not found</p>';
+    }
+}
